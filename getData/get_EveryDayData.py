@@ -73,7 +73,7 @@ def get_data_by_reload_all(db_engine, ts_pro):
     # --- 股票基础数据 ---
     # get_Stock_Basic(db_engine, ts_pro)  # 上市公司基本信息（代码/名称/上市日期等）
     # get_stock_stk_rewards_fast(db_engine, ts_pro)  # 高管薪酬（需5000积分权限）
-    get_Stock_Daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 日线行情（开盘价/收盘价/成交量等）
+    # get_Stock_Daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 日线行情（开盘价/收盘价/成交量等）
     # get_index_daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 指数日线行情
     # get_Stock_Daily_Basic(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 扩展指标（市盈率/市净率/换手率等）
     

@@ -25,7 +25,7 @@ if __name__ == '__main__':
     # 指定日期是注意日期格式应为：'20210901'
     # str_date = currentDate
     # end_date = currentDate
-    str_date = '20040302'
+    str_date = '19901219'
     end_date = currentDate
     # str_date = '20120101'
     # end_date = '20220121'

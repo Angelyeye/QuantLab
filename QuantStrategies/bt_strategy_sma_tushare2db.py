@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8; py-indent-offset:4 -*-
 
-
-#这是一个简单的示例，展示了双均线策略的实现。
-
-
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+
+# 在文件开头添加以下代码
+import sys
+from pathlib import Path
+
+# 将项目根目录添加到Python路径
+sys.path.append(str(Path(__file__).parent.parent))
+
+#这是一个简单的示例，展示了双均线策略的实现。
 
 import datetime  # For datetime objects
 import pandas as pd
@@ -21,9 +26,9 @@ def get_data_from_tushare2db():
     currentdate = init_currentDate()
     b_engine = init_db()
     # 策略跟踪的股票代码
-    stock_id = "600519.SH"
+    stock_id = "600892.SH"
     # 跟踪启止日期
-    start = "20210101"
+    start = "20240101"
     end = currentdate
     dt_start = datetime.datetime.strptime(start, "%Y%m%d")
     dt_end = datetime.datetime.strptime(end, "%Y%m%d")
@@ -149,7 +154,7 @@ if __name__ == '__main__':
     data = get_data_from_tushare2db()
     cerebro.adddata(data)
     # 设置初始资金
-    cerebro.broker.setcash(210000.0)
+    cerebro.broker.setcash(500.0)
 
     # 设置交易单位大小
     cerebro.addsizer(bt.sizers.FixedSize, stake=100)
@@ -175,13 +180,26 @@ if __name__ == '__main__':
     # 返回日度收益率序列
     daily_return = pd.Series(start.analyzers.pnl.get_analysis())
     # 打印评价指标
-    print("--------------- AnnualReturn -----------------")
-    print(start.analyzers._AnnualReturn.get_analysis())
-    print("--------------- SharpeRatio -----------------")
-    print(start.analyzers._SharpeRatio.get_analysis())
-    print("--------------- DrawDown -----------------")
-    print(start.analyzers._DrawDown.get_analysis())
+    print("--------------- 年度收益率分析 -----------------")
+    annual_returns = start.analyzers._AnnualReturn.get_analysis()
+    for year, ret in annual_returns.items():
+        print(f"{year}年度收益率: {ret*100:.2f}%")
+    
+    print("--------------- 夏普比率分析 -----------------")
+    sharpe = start.analyzers._SharpeRatio.get_analysis()
+    print(f"夏普比率: {sharpe['sharperatio']:.3f}")
+    
+    print("--------------- 最大回撤分析 -----------------")
+    drawdown = start.analyzers._DrawDown.get_analysis()
+    print(f"最大回撤: {drawdown['max']['drawdown']:.2f}%")
+    print(f"最大回撤周期: {drawdown['max']['len']}个交易日")
+    print(f"最大回撤金额: {drawdown['max']['moneydown']:.2f}")
 
     # 可视化回测结果
-    plt = cerebro.plot(style='candle')
+    # 可视化回测结果
+    fig = cerebro.plot(style='candle')[0][0]
+    fig.set_title('双均线策略回测结果')
+    fig.get_xaxis().set_label_text('日期')
+    fig.get_yaxis().set_label_text('价格')
+    fig.legend(['K线', '20日均线'])
     plt.show()
