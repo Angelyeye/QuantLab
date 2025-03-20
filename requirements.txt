@@ -1,0 +1,6 @@
+pandas
+sqlalchemy
+retry
+tushare
+backtrader
+pathlib
