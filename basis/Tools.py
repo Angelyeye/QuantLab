@@ -318,12 +318,15 @@ def get_and_write_data_by_codelist(db_engine, ts_pro, codeList, prefix,
     iTotal = codeList.__len__()  # 获取代码列表总长度
     df = pd.DataFrame    # 初始化空数据框
     codeListArray = codeList.__array__()  # 将输入转换为数组格式
-    
+    # print('codeListArray:', codeListArray)
     # 遍历代码列表
     for code in codeListArray:
         offset = 0  # 重置分页偏移量
         # 单个代码的分页循环
         while True:
+            # 将数组格式转化为字符串格式
+            code = str(code[0])
+            print('code:', code)
             # 获取单页数据（传入当前代码和偏移量）
             df = get_data(ts_pro, code, offset)
             # 写入数据库

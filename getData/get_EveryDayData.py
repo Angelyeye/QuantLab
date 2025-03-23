@@ -56,6 +56,7 @@ from getDataFromTushare.Get_Financial_Income_ToDB import get_financial_income
 from getDataFromTushare.Get_Cb_Min_ToDB import get_Cb_Min_By_date_and_codelist
 from getDataFromTushare.Get_Stock_Min_ToDB import get_stock_Min_By_date_and_codelist
 from getDataFromTushare.Get_Stock_STK_Rewards_Fast_ToDB import get_stock_stk_rewards_fast
+from getDataFromTushare.Get_stk_factor_pro_Daily_ToDB import Get_stk_factor_pro_Daily_ToDB
 
 
 def get_data_by_reload_all(db_engine, ts_pro):
@@ -76,6 +77,7 @@ def get_data_by_reload_all(db_engine, ts_pro):
     # get_Stock_Daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 日线行情（开盘价/收盘价/成交量等）
     # get_index_daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 指数日线行情
     # get_Stock_Daily_Basic(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 扩展指标（市盈率/市净率/换手率等）
+    Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 股票技术面因子（专业版）
     
     # --- 港股数据（按需启用）---
     # get_HK_Trade_Cal(db_engine, ts_pro)  # 港股交易日历
@@ -87,7 +89,7 @@ def get_data_by_reload_all(db_engine, ts_pro):
     
     # --- 基金数据 ---
     # get_Fund_Basic(db_engine, ts_pro)  # 公募基金列表（代码/名称/类型）
-    # get_Fund_Daily(db_engine, ts_pro,start_date=str(20000101), end_date=currentDate)  # 场内ETF/LOF基金行情
+    # get_Fund_Daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 场内ETF/LOF基金行情
     
     # --- 指数数据 ---
     # get_index_basic(db_engine, ts_pro)  # 指数基本信息（成分股/编制方案等）
@@ -123,6 +125,7 @@ def get_data_by_date(db_engine, ts_pro, str_date, end_date):
     # get_TopInst(db_engine, ts_pro, str_date, end_date)            # 龙虎榜机构买卖明细
     # get_TopList(db_engine, ts_pro, str_date, end_date)            # 龙虎榜汇总数据（每日明细）
     # get_Stock_Moneyflow(db_engine, ts_pro, str_date, end_date)    # 个股资金流向（主力/散户资金）
+    # get_cyq_perf(db_engine, ts_pro, str_date, end_date)             # 个股每日筹码及胜率（为测试不可用）
 
     # ----------------- 港股数据（按需启用）-----------------
     # get_HK_Daily(db_engine, ts_pro, str_date, end_date)         # 港股日线行情（需开通权限）
@@ -224,10 +227,10 @@ if __name__ == '__main__':
     #ts = init_ts()                 # 初始化普通版Tushare接口（兼容旧版API） 看了新的文档发现不需要了
     currentDate = init_currentDate()
     # 指定日期是注意日期格式应为：'20210901'
-    str_date = currentDate
-    end_date = currentDate
-    # str_date = '20220218'
-    # end_date = '20220218'
+    # str_date = currentDate
+    # end_date = currentDate
+    str_date = '20250321'
+    end_date = '20250321'
 
     # 加载列表信息，该类接口均为清空后重新加载，其中日期表建议加载一次就可以了，后续客户注释掉
     get_data_by_reload_all(db_engine, ts_pro)  # STEP1: 全量更新基础数据
@@ -240,6 +243,10 @@ if __name__ == '__main__':
     # 执行结果反馈
     print('数据加载完毕，数据日期：', end_date)  # 输出最终日期标记
     end_str = input("今日数据加载完毕，请复核是否正确执行！")  # 阻塞等待用户确认
+
+    # 关闭sqlalchemy连接池
+    db_engine.dispose()
+    print('数据库连接已关闭！')
 
     # 每日运行流程：
     # 1. 早上9:00 → 运行全量更新（仅维护时执行）

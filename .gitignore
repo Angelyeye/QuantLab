@@ -20,3 +20,4 @@ env/
 # Project specific
 config.ini
 *.log
+测试.py
