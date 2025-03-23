@@ -297,11 +297,11 @@ from retry import retry
 from sqlalchemy.types import NVARCHAR, DATE, Integer, DECIMAL
 
 from basis.Init_Env import init_stock_codeList, init_ts_pro, init_db, init_currentDate
-from basis.Tools import check_or_create_table, drop_Table, get_and_write_data_by_codelist, truncate_Table
+from basis.Tools import check_or_create_table, drop_Table, get_and_write_data_by_codelist, truncate_Table ,get_and_write_data_by_date
 
 rows_limit = 10000  # 该接口限制每次调用，最大获取数据量
 times_limit = 30  # 该接口限制,每分钟最多调用次数
-sleeptimes = 61
+sleeptimes = 15
 prefix = 'hq_stk_factor_pro'
 dtype={'ts_code': NVARCHAR(20),
        'trade_date': DATE,
@@ -419,31 +419,36 @@ dtype={'ts_code': NVARCHAR(20),
        'xsii_td3_bfq': DECIMAL(17, 2), 'xsii_td3_hfq': DECIMAL(17, 2), 'xsii_td3_qfq': DECIMAL(17, 2),
        'xsii_td4_bfq': DECIMAL(17, 2), 'xsii_td4_hfq': DECIMAL(17, 2), 'xsii_td4_qfq': DECIMAL(17, 2)}
 
-
 def write_db(df, db_engine):
-    # drop_Table(db_engine, prefix)
-    inspector = inspect(db_engine)
+    # drop_Table(db_engine, prefix) # 删除指定数据表（若存在）
+    inspector = inspect(db_engine) 
     if not inspector.has_table(prefix):
-        df.to_sql(prefix, db_engine, chunksize=5, if_exists='replace', index=False)
+        # 创建表时就使用正确的字段类型
+        df.to_sql(prefix, db_engine, chunksize=500, if_exists='replace', index=False, dtype=dtype)
         print(prefix,"表创建成功")
         truncate_Table(db_engine, prefix)
         print(prefix,"表清空成功")
-    tosqlret = df.to_sql(prefix, db_engine, chunksize=10, if_exists='append', index=False,
-                         dtype=dtype)
+    # 插入数据时也使用正确的字段类型
+    tosqlret = df.to_sql(prefix, db_engine, chunksize=4000, if_exists='append', 
+                        index=False, method="multi", dtype=dtype)
     return tosqlret
 
 
 # @retry(tries=2, delay=61)
-def get_data(ts_pro, code, offset):
-    df = ts_pro.stk_factor_pro(ts_code=code, limit=10000, offset=offset)
+def get_data(ts_pro, idate, offset, rows_limit):
+    df = ts_pro.stk_factor_pro(trade_date=idate, limit=rows_limit, offset=offset)
+    # print('stk_factor_pro:',df)
     return df
 
 
 def Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro, start_date, end_date):
     codeList = init_stock_codeList(engine=db_engine)
-    df = get_and_write_data_by_codelist(db_engine, ts_pro, codeList, prefix,
-                                   get_data, write_db,
-                                   rows_limit, times_limit, sleeptimes)  # 读取行情数据，并存储到数据库
+    sleeptime = sleeptimes
+    # df = get_and_write_data_by_codelist(db_engine, ts_pro, codeList, prefix,
+    #                                get_data, write_db,
+    #                                rows_limit, times_limit, sleeptimes)  # 读取行情数据，并存储到数据库
+    df = get_and_write_data_by_date(db_engine, ts_pro, 'CN', start_date, end_date,
+                               get_data, write_db, prefix, rows_limit, times_limit, sleeptime)  # 读取行情数据，并存储到数据库
 
 
 if __name__ == '__main__':
@@ -451,9 +456,10 @@ if __name__ == '__main__':
     db_engine = init_db()
     ts_pro = init_ts_pro()
     currentDate = init_currentDate()
+    # start_date = '20250301'
 
-    Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro, '19900101', currentDate)
+    Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro, start_date, currentDate)
     # Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro, '20240101', currentDate)
 
     print('数据日期：', currentDate)
-    end_str = input("当日日线行情加载完毕，请复核是否正确执行！")
+    end_str = input("当日股票技术面因子(专业版)行情加载完毕，请复核是否正确执行！")

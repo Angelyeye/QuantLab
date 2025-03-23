@@ -77,7 +77,7 @@ def get_data_by_reload_all(db_engine, ts_pro):
     # get_Stock_Daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 日线行情（开盘价/收盘价/成交量等）
     # get_index_daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 指数日线行情
     # get_Stock_Daily_Basic(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 扩展指标（市盈率/市净率/换手率等）
-    Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 股票技术面因子（专业版）
+    Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro,start_date=str_date, end_date=currentDate)  # 股票技术面因子（专业版）,初次加载使用start_date=str(19901219)
     
     # --- 港股数据（按需启用）---
     # get_HK_Trade_Cal(db_engine, ts_pro)  # 港股交易日历
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     # 指定日期是注意日期格式应为：'20210901'
     # str_date = currentDate
     # end_date = currentDate
-    str_date = '20250321'
+    str_date = '20250301'
     end_date = '20250321'
 
     # 加载列表信息，该类接口均为清空后重新加载，其中日期表建议加载一次就可以了，后续客户注释掉
