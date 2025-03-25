@@ -71,10 +71,10 @@ from retry import retry
 from sqlalchemy.types import NVARCHAR, DATE, Integer, DECIMAL
 
 from basis.Init_Env import init_ts_pro, init_db, init_currentDate, init_stock_codeList
-from basis.Tools import get_and_write_data_by_date, get_and_write_data_by_codelist, truncate_Table, \
+from basis.Tools import get_and_write_data_by_date, get_and_write_data_by_code_simple, truncate_Table, \
     get_and_write_data_by_long_codelist, check_or_create_table
 
-rows_limit = 50000  # 该接口限制每次调用，最大获取数据量
+rows_limit = 4000  # 该接口限制每次调用，最大获取数据量
 times_limit = 2000  # 该接口限制,每分钟最多调用次数
 sleeptimes = 61  # 暂停多少秒
 codes_onetime = 1000  # codes_onetime ：一次调用最多获取多少个代码对应的数据
@@ -90,7 +90,7 @@ dtype={'ts_code': NVARCHAR(20),
 def write_db(df, db_engine):
     
     check_or_create_table(db_engine, prefix,dtype)
-    tosqlret = df.to_sql(prefix, db_engine, chunksize=1000000, if_exists='replace', index=False,
+    tosqlret = df.to_sql(prefix, db_engine, chunksize=1000000, if_exists='append', index=False,
                          dtype={'ts_code': NVARCHAR(20),
                                 'ann_date': DATE,
                                 'end_date': DATE,
@@ -109,11 +109,11 @@ def get_data(ts_pro, codes, rows_limit, offset):
 def get_stock_stk_rewards_fast(db_engine, ts_pro):
     check_or_create_table(db_engine, prefix,dtype)
     truncate_Table(db_engine, prefix)
-    codelist = init_stock_codeList(db_engine)
+    codeList = init_stock_codeList(db_engine)
     print(prefix, '接口：开始调用！')
-    df = get_and_write_data_by_long_codelist(db_engine, ts_pro, codelist, prefix,
-                                             get_data, write_db, codes_onetime,
-                                             rows_limit, times_limit, sleeptimes)
+    df = get_and_write_data_by_long_codelist(db_engine, ts_pro, codeList, prefix,
+                                        get_data, write_db, codes_onetime,
+                                        rows_limit, times_limit, sleeptimes)
 
 
 if __name__ == '__main__':

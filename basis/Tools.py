@@ -362,47 +362,38 @@ def get_and_write_data_by_long_codelist(db_engine, ts_pro, codeList, prefix,
         codeList: 证券代码集合（支持DataFrame/Series/List）
         其他参数同 get_and_write_data_by_codelist
     """
-    # 初始化计数器
-    itimes = 1  # 接口总调用次数
-    i = 1       # 代码遍历进度计数器
+    # codes_onetime ：一次调用最多获取多少个代码对应的数据，针对可以一次传多个代码的接口的快速取数
+    itimes = 1  # 第几次调用
+    i = 1  # 循环了几次
     codelist_len = codeList.__len__()
-    codeListArray = codeList.__array__()  # 转换为可迭代数组
-    codes = ''    # 代码拼接缓冲区
-    offset = 0    # 分页偏移量
-    df = pd.DataFrame  # 空数据框初始化
-
-    # 遍历代码列表（分组处理逻辑）
+    codeListArray = codeList.__array__()
+    codes = ''
+    offset = 0
+    df = pd.DataFrame
     for code in codeListArray:
-        # 代码拼接逻辑（用逗号分隔多个代码）
-        if codes == '':  # 缓冲区为空时直接添加
-            codes = code[0]  # 假设code是元组/数组，取第一个元素为代码字符串
-        else:  # 非空时追加代码
+        if codes == '':
+            codes = code[0]
+        else:
             codes = codes + ',' + code[0]
-
-        # 分组触发条件（达到单次处理量或最后一个代码）
+            # print('codes:', codes)
         if i % codes_onetime == 0 or i + 1 == codelist_len:
-            offset = 0  # 每组代码都从第一页开始
-            # 分页获取当前代码组的数据
+            # 对于每次代码列表的调用，按照该接口单次代码的限制进行多次取数据
+            offset = 0
             while True:
-                # 获取分组数据（多个代码+分页参数）
                 df = get_data(ts_pro, codes, rows_limit, offset)
-                # 写入数据库
                 res = write_db(df, db_engine)
 
-                # 打印带进度的日志
                 print(prefix, '接口：已调用：', itimes,
                       '次，返回结果(None表示成功):', res, '  数据日期:', currentDate, '  数据条数:', len(df))
 
-                # 频率控制（达到调用上限时休眠）
                 if itimes % times_limit == 0:
                     print(prefix, '接口：在一分钟内已调用', times_limit, '次：sleep ', sleeptimes, 's')
                     time.sleep(sleeptimes)
-                # 终止条件（数据量不足时结束当前代码组）
                 elif len(df) < rows_limit:
                     itimes = itimes + 1
                     break  # 读不到了，就跳出去读下一个日期的数据
-                offset = offset + rows_limit # 翻页
-                itimes = itimes + 1          # 总调用次数递增
+                offset = offset + rows_limit
+                itimes = itimes + 1
             codes = ''  # 本次证券列表用完后，清空，以便下一次调用时不会重复调用
 
         i = i + 1
@@ -537,5 +528,53 @@ def get_and_write_data_by_start_end_date_and_codelist(db_engine, ts_pro, prefix,
                 
             offset = offset + rows_limit  # 翻页
             iTimes = iTimes + 1          # 总调用次数更新
+
+    return df
+
+
+#按证券代码获取历史数据（不分页）
+def get_and_write_data_by_code_simple(db_engine, ts_pro, codeList, prefix,
+                                   get_data, write_db, times_limit, sleeptimes):
+    """
+    按证券代码获取历史数据（不分页版本）
+    Args:
+        db_engine: 数据库连接引擎
+        ts_pro: Tushare Pro接口对象
+        codeList: 证券代码集合（支持DataFrame/Series/List）
+        prefix: 接口标识，用于日志输出
+        get_data: 数据获取函数，需满足签名：def func(ts_pro, code) -> DataFrame
+        write_db: 数据写入函数，需满足签名：def func(df, engine) -> None
+        times_limit: 每分钟最大调用次数
+        sleeptimes: 触发调用限制时的休眠时间（秒）
+    Returns:
+        pandas.DataFrame: 最后获取的数据块
+    """
+    itimes = 1           # 总调用次数计数器
+    iTotal = codeList.__len__()  # 获取代码列表总长度
+    df = pd.DataFrame    # 初始化空数据框
+    codeListArray = codeList.__array__()  # 将输入转换为数组格式
+
+    # 遍历代码列表
+    for code in codeListArray:
+        # 将数组格式转化为字符串格式
+        code = str(code[0])
+        print('code:', code)
+        
+        # 获取该代码的全量数据
+        df = get_data(ts_pro, code)
+        # 写入数据库
+        res = write_db(df, db_engine)
+        
+        # 打印带时间戳的详细日志
+        print(prefix, '接口：已调用，调用时间：', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+              '当前：', itimes, '/', iTotal, '次,代码：', code, '，写入数据库返回(None表示成功):', res,
+              '  数据条数:', len(df))
+
+        # 接口调用频率控制
+        if itimes % times_limit == 0:
+            print(prefix, '接口：已调用', times_limit, '次，根据该接口限制，sleep ', sleeptimes, 's，后再继续调用！')
+            time.sleep(sleeptimes)
+            
+        itimes = itimes + 1  # 调用次数递增
 
     return df
