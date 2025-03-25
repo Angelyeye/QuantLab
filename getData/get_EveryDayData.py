@@ -239,7 +239,9 @@ if __name__ == '__main__':
     # 按日期段进行数据整理
     #deal_wrong_date(db_engine, ts_pro, str_date, end_date) # STEP3: 数据质量校验
     #deal_wrong_date(db_engine, ts_pro, ts, str_date, end_date) # STEP3: 数据质量校验   删除ts参数
-
+    
+    # 获取当前时间（精确到秒）
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # 执行结果反馈
     print('数据加载完毕，数据日期：', end_date)  # 输出最终日期标记
     # 关闭sqlalchemy连接池
