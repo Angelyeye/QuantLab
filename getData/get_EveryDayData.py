@@ -6,6 +6,7 @@
 
 import sys
 import os
+from datetime import datetime
 
 # 获取当前文件的绝对路径（__file__ 表示当前脚本的文件路径）
 curPath = os.path.abspath(os.path.dirname(__file__))
@@ -77,7 +78,7 @@ def get_data_by_reload_all(db_engine, ts_pro):
     # get_Stock_Daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 日线行情（开盘价/收盘价/成交量等）
     # get_index_daily(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 指数日线行情
     # get_Stock_Daily_Basic(db_engine, ts_pro,start_date=str(19901219), end_date=currentDate)  # 扩展指标（市盈率/市净率/换手率等）
-    Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro,start_date=str_date, end_date=currentDate)  # 股票技术面因子（专业版）,初次加载使用start_date=str(19901219)
+    # Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro,start_date=str_date, end_date=currentDate)  # 股票技术面因子（专业版）,初次加载使用start_date=str(19901219)
     
     # --- 港股数据（按需启用）---
     # get_HK_Trade_Cal(db_engine, ts_pro)  # 港股交易日历
@@ -126,6 +127,7 @@ def get_data_by_date(db_engine, ts_pro, str_date, end_date):
     # get_TopList(db_engine, ts_pro, str_date, end_date)            # 龙虎榜汇总数据（每日明细）
     # get_Stock_Moneyflow(db_engine, ts_pro, str_date, end_date)    # 个股资金流向（主力/散户资金）
     # get_cyq_perf(db_engine, ts_pro, str_date, end_date)             # 个股每日筹码及胜率（为测试不可用）
+    # Get_stk_factor_pro_Daily_ToDB(db_engine, ts_pro,start_date=str_date, end_date=currentDate)  # 股票技术面因子（专业版）
 
     # ----------------- 港股数据（按需启用）-----------------
     # get_HK_Daily(db_engine, ts_pro, str_date, end_date)         # 港股日线行情（需开通权限）
@@ -229,11 +231,11 @@ if __name__ == '__main__':
     # 指定日期是注意日期格式应为：'20210901'
     # str_date = currentDate
     # end_date = currentDate
-    str_date = '20250301'
-    end_date = '20250321'
+    str_date = '20250323'
+    end_date = '20250325'
 
     # 加载列表信息，该类接口均为清空后重新加载，其中日期表建议加载一次就可以了，后续客户注释掉
-    get_data_by_reload_all(db_engine, ts_pro)  # STEP1: 全量更新基础数据
+    # get_data_by_reload_all(db_engine, ts_pro)  # STEP1: 全量更新基础数据
     # 按日期段加载每日数据
     # get_data_by_date(db_engine, ts_pro, str_date, end_date)  # STEP2: 增量更新当日数据
     # 按日期段进行数据整理
