@@ -361,6 +361,7 @@ def get_and_write_data_by_long_codelist(db_engine, ts_pro, codeList, prefix,
         codes_onetime: 单次API调用最大代码承载量（一次调用最多获取多少个代码对应的数据，针对可以一次传多个代码的接口的快速取数）
         codeList: 证券代码集合（支持DataFrame/Series/List）
         其他参数同 get_and_write_data_by_codelist
+    Exception: offset不能大于100000, 请通过其他条件缩小查询范围。
     """
     # codes_onetime ：一次调用最多获取多少个代码对应的数据，针对可以一次传多个代码的接口的快速取数
     itimes = 1  # 第几次调用

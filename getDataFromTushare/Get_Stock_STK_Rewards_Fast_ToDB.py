@@ -76,8 +76,8 @@ from basis.Tools import get_and_write_data_by_date, get_and_write_data_by_code_s
 
 rows_limit = 4000  # 该接口限制每次调用，最大获取数据量
 times_limit = 2000  # 该接口限制,每分钟最多调用次数
-sleeptimes = 61  # 暂停多少秒
-codes_onetime = 1000  # codes_onetime ：一次调用最多获取多少个代码对应的数据
+sleeptimes = 10  # 暂停多少秒
+codes_onetime = 2  # codes_onetime ：一次调用最多获取多少个代码对应的数据
 prefix = 'hq_stock_stk_rewards'
 dtype={'ts_code': NVARCHAR(20),
     'ann_date': DATE,
