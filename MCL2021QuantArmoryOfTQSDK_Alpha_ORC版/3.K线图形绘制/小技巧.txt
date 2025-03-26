@@ -1,0 +1,2 @@
+1.sublime无法绘图:Preferences=>Browse Packages=>Default=>exec.py ，注释掉startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW这行（39左右）
+2.如果找不到exec.py，则在Sublime 的python配置代码中添加"shell":true代码
